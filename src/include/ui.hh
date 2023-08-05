@@ -15,8 +15,8 @@ class UI {
         int currentLine=0;
         int x = 0;
         int currentchar=0;
-        std::vector<char> currentMessage;
         static UI* ui;    
+        std::vector<char> currentMessage;
         UI();
         UI(UI const&);
         

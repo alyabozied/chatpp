@@ -19,7 +19,7 @@ UI* UI::initUI(){
 
 }
 UI::~UI(){
-
+   endwin();
 }
 std::string UI::readUserInput(){
     c = getch();
