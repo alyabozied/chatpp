@@ -2,9 +2,7 @@
 #define PORT 8000
 
 NetworkAdapter* NetworkAdapter::networkAdapter = nullptr;
-
-NetworkAdapter::NetworkAdapter(){
-  
+void NetworkAdapter::__initserver(){
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         perror("socket failed");
         exit(EXIT_FAILURE);
@@ -46,10 +44,49 @@ NetworkAdapter::NetworkAdapter(){
 
   
 }
+void NetworkAdapter::__initclient(std::string ipaddress){
 
-NetworkAdapter* NetworkAdapter::initNetworkAdpater(){
+    
+    if ((newSocket = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+        
+        perror(" Socket creation error");
+        exit(EXIT_FAILURE);
+    }
+    fcntl(newSocket, F_SETFL, O_NONBLOCK);
+
+    address.sin_family = AF_INET;
+    // serv_addr.sin_addr.s_addr = INADDR_ANY;
+    
+    address.sin_port = htons(PORT);
+  
+    // Convert IPv4 and IPv6 addresses from text to binary
+    // form
+    if (inet_pton(AF_INET,ipaddress.c_str(), &address.sin_addr)
+        <= 0) {
+        printf(
+            "\nInvalid address/ Address not supported \n");
+        perror("Invalid address/ Address not supported");
+        exit(EXIT_FAILURE);
+    }
+
+    //connect to server
+    int status = -1;
+    do {
+    status = connect(newSocket,(struct sockaddr*)&address,sizeof(address));
+
+    }while(status <0);
+}
+NetworkAdapter::NetworkAdapter(std::string clientOrServer,std::string ipaddress){
+    if (clientOrServer == "server")
+        __initserver();
+    else 
+        __initclient(ipaddress);
+    
+}
+
+NetworkAdapter* NetworkAdapter::initNetworkAdpater(std::string clientOrServer,std::string ipaddress){
     if(networkAdapter == nullptr){
-        networkAdapter = new NetworkAdapter();
+        networkAdapter = new NetworkAdapter(clientOrServer,ipaddress);
     }
     return networkAdapter;
     

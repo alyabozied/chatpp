@@ -1,78 +1,43 @@
 
 // Client side C/C++ program to demonstrate Socket
 // programming
-#include <arpa/inet.h>
-#include <stdio.h>
-#include <string.h>
-#include <sys/socket.h>
-#include <unistd.h>
-#include <chrono>
-#include <thread>
-#include <fcntl.h>
-#include <ncurses.h>
 #include <string>
 #include "ui.hh"
+#include "networkAdpater.hh"
 #include <iostream>
 #define PORT 8000
   
 int main(int argc, char const* argv[])
 {
-    
-    int status, valread, client_fd;
-    struct sockaddr_in serv_addr;
-    char* hello = "Hello from client";
-    char buffer[1024] = { 0 };
+    std::string ipaddress = "127.0.0.1";
+    if (argc >1)
+        ipaddress = argv[1];
+    NetworkAdapter * myNetworkAdapter = NetworkAdapter::initNetworkAdpater("client", ipaddress);       
     std::cout<<"trying to connect to the server ..." << std::endl;
-    if ((client_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-        printf("\n Socket creation error \n");
-        return -1;
-    }
-    fcntl(client_fd, F_SETFL, O_NONBLOCK);
-
-    serv_addr.sin_family = AF_INET;
-    // serv_addr.sin_addr.s_addr = INADDR_ANY;
-    
-    serv_addr.sin_port = htons(PORT);
-  
-    // Convert IPv4 and IPv6 addresses from text to binary
-    // form
-    if (inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr)
-        <= 0) {
-        printf(
-            "\nInvalid address/ Addre   ss not supported \n");
-        return -1;
-    }
-        std::cout<<"trying to connect to the server ..." << std::endl;
-
-    //connect to server
-    do {
-    status = connect(client_fd,(struct sockaddr*)&serv_addr,sizeof(serv_addr));
-
-    }while(status <0);
-    char c;
     UI* myUI = UI::initUI();
+   int valread;
+    char incomingMessage[1024]= {0};
     while(true){
-        valread = read(client_fd, buffer, 1024);
-        std::string s = myUI->readUserInput();
-        if(s.length() >0){
-            send(client_fd,s.c_str(),s.length(),0);
-            myUI->printMessages(s,1);
-        }
-        
-        if(valread == -1){
+        valread = myNetworkAdapter->receiveMessage(incomingMessage,1024);
+        //handle input data from user
+        std::string sentMessage = myUI->readUserInput();
+        if(sentMessage.length() >0){
+            myNetworkAdapter->sendMessage(sentMessage);
+            myUI->printMessages(sentMessage,1);
+        }        
+
+        if(valread == -1){ // no data 
             refresh();
             continue;
         }
-        if(valread ==0){
+        if(valread ==0){ // client DC'ed
             refresh();
             break;
         }
-        myUI->printMessages(buffer,2);
+        // print incoming messages 
+        myUI->printMessages(incomingMessage,2);
     }
-  
-    // closing the connected socket
-    
-    endwin();
-    close(client_fd);
+    delete myUI;
+    delete myNetworkAdapter;
     return 0;
 }

@@ -1,26 +1,14 @@
 
 // Server side C/C++ program to demonstrate Socket
 // programming
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <netdb.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <cctype>
 #include <string>
-#include <vector>
 #include <iostream>
 #include "ui.hh"
 #include "networkAdpater.hh"
 int main(int argc, char const* argv[])
 {
     std::cout << "wait trying to connect to a client ..."<<std::endl;
-    NetworkAdapter * myNetworkAdapter = NetworkAdapter::initNetworkAdpater();       
+    NetworkAdapter * myNetworkAdapter = NetworkAdapter::initNetworkAdpater("server");       
     UI* myUI = UI::initUI();
     int valread;
     char incomingMessage[1024]= {0};
@@ -44,6 +32,7 @@ int main(int argc, char const* argv[])
         // print incoming messages 
         myUI->printMessages(incomingMessage,2);
     }
-
+    delete myUI;
+    delete myNetworkAdapter;
     return 0;
 }
