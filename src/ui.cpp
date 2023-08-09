@@ -14,6 +14,7 @@ UI* UI::initUI(){
         refresh();
         start_color();
         init_pair(1, COLOR_BLACK, COLOR_BLUE);
+        init_pair(2, COLOR_BLACK, COLOR_RED);
     }
     return ui;
 
@@ -35,7 +36,7 @@ std::string UI::readUserInput(){
         return s;
     }
     if(isalnum(c) || c == ' '){
-        attron(COLOR_PAIR(2));
+        attron(COLOR_PAIR(1));
 
         mvprintw(20,currentchar++,"%c",c);
         currentMessage.push_back(c);
